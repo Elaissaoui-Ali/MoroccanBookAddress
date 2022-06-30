@@ -10,9 +10,11 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 
-public class Window extends JFrame {
+    public class Window extends JFrame {
 
     private static int openedWindows = 0;
     private final int WIDTH = 900;
@@ -21,11 +23,17 @@ public class Window extends JFrame {
     private JTable jTable;
     private DefaultTableModel tableModel;
     private AddressBook addressBook;
+    private boolean dataChanged = false;
 
     public Window(AddressBook addressBook) throws HeadlessException {
         super("Untitled");
         init(addressBook);
     }
+
+        public Window(AddressBook addressBook, String title) throws HeadlessException {
+            super(title);
+            init(addressBook);
+        }
 
     public void init(AddressBook addressBook){
         openedWindows++;
@@ -40,6 +48,54 @@ public class Window extends JFrame {
                 this.tableModel.addRow(pr.toRow());
             }
         }
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent windowEvent) {
+
+            }
+
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                if(Window.this.dataChanged){
+                    int input = JOptionPane.showConfirmDialog(Window.this,
+                            "Do you want to proceed?", "Select an Save...",JOptionPane.YES_NO_CANCEL_OPTION);
+                    if(input == 0){
+                        Window.this.saveToDiskFile();
+                        Window.this.dispose();
+                    }else if(input == 1){
+                        Window.this.dispose();
+                    }
+                }else{
+                    Window.this.dispose();
+                }
+            }
+
+            @Override
+            public void windowClosed(WindowEvent windowEvent) {
+
+            }
+
+            @Override
+            public void windowIconified(WindowEvent windowEvent) {
+
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent windowEvent) {
+
+            }
+
+            @Override
+            public void windowActivated(WindowEvent windowEvent) {
+
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent windowEvent) {
+
+            }
+        });
     }
 
 
@@ -54,7 +110,11 @@ public class Window extends JFrame {
 
     private void initTable() {
         tableModel = new DefaultTableModel();
-        jTable = new JTable(tableModel);
+        jTable = new JTable(tableModel) {
+            public boolean isCellEditable(int row, int column) {
+            return false;
+        };
+    };
         for (String s: PersonRecord.LABEL_LIST) {
             tableModel.addColumn(s);
         }
@@ -111,18 +171,49 @@ public class Window extends JFrame {
                 editSelected();
             }
         });
-
+        editMenu.add(new MenuOption("Delete", "Delete selected record") {
+            @Override
+            public void action() {
+                deleteSelected();
+            }
+        });
         menuBar.add(editMenu);
+    }
+
+    private void deleteSelected() {
+        int selectedRow = Window.this.jTable.getSelectedRow();
+        if(selectedRow < 0){
+            JOptionPane.showConfirmDialog(this,
+                    "No row is selected", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int input = JOptionPane.showConfirmDialog(this,
+                "Do you want to proceed?", "Select an Option...",JOptionPane.YES_NO_CANCEL_OPTION);
+        System.out.println(selectedRow);
+        if(input == 0){
+            this.addressBook.getDataTable().remove(selectedRow);
+            this.tableModel.removeRow(selectedRow);
+            Window.this.dataChanged = true;
+        }
     }
 
     private void editSelected() {
         PersonRecord recordToEdit = this.addressBook.getDataTable().get(this.jTable.getSelectedRow());
-
-    }
-
-    private void createNewAddressBook(){
-        System.out.println("createOption");
-        this.setTitle("createOption");
+        new AddEditDialog(this, recordToEdit, new AddEditDialog.DialogAction() {
+            @Override
+            public void action(PersonRecord newRecord) {
+                int selectedRow = Window.this.jTable.getSelectedRow();
+                System.out.println(newRecord);
+                Window.this.addressBook.getDataTable().set(Window.this.jTable.getSelectedRow(), newRecord);
+                Window.this.tableModel.setValueAt(newRecord.getFirstName(), selectedRow, 0);
+                Window.this.tableModel.setValueAt(newRecord.getLastName(), selectedRow, 1);
+                Window.this.tableModel.setValueAt(newRecord.getAddress(), selectedRow, 2);
+                Window.this.tableModel.setValueAt(newRecord.getCity(), selectedRow, 3);
+                Window.this.tableModel.setValueAt(newRecord.getPostalCode(), selectedRow, 4);
+                Window.this.tableModel.setValueAt(newRecord.getPhoneNumber(), selectedRow, 5);
+                Window.this.dataChanged = true;
+            }
+        });
     }
 
     private void openFromDiskFile(){
@@ -146,7 +237,7 @@ public class Window extends JFrame {
             if (file.getName()
                     .substring(file.getName().length() - 4)
                     .equals(".txt")){
-               new Window(new AddressBook(new DiskFile(file)));
+               new Window(new AddressBook(new DiskFile(file)), file.getName().substring(0,file.getName().length() - 4));
             }else{
                 JOptionPane.showMessageDialog(this,
                         "File should be a text file.",
@@ -166,6 +257,8 @@ public class Window extends JFrame {
                 this.diskFile = new DiskFile(fileChooser.getSelectedFile());
                 this.diskFile.setFile(fileChooser.getSelectedFile());
                 this.diskFile.writeIntoDiskFile(this.addressBook);
+                this.dataChanged = false;
+                this.setTitle(fileChooser.getSelectedFile().getName());
             }else{
                 System.out.println("file open operation was cancelled!");
             }
@@ -182,6 +275,7 @@ public class Window extends JFrame {
             public void action(PersonRecord newRecord) {
                 Window.this.addressBook.addPersonRecord(newRecord);
                 Window.this.tableModel.addRow(newRecord.toRow());
+                Window.this.dataChanged = true;
             }
         });
     }

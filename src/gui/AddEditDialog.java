@@ -78,7 +78,7 @@ public class AddEditDialog extends JDialog {
                         postalCode.getText(),
                         phoneNumber.getText()
                 );
-                action.action(personRecord);
+                action.action(AddEditDialog.this.personRecord);
                 AddEditDialog.this.dispose();
             }
         });
