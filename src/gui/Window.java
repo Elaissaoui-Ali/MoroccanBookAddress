@@ -35,6 +35,11 @@ public class Window extends JFrame {
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.addMenuBar();
         this.initTable();
+        if(this.addressBook.getDataTable().size() > 0){
+            for (PersonRecord pr: this.addressBook.getDataTable()){
+                this.tableModel.addRow(pr.toRow());
+            }
+        }
     }
 
 
@@ -52,7 +57,6 @@ public class Window extends JFrame {
         jTable = new JTable(tableModel);
         for (String s: PersonRecord.LABEL_LIST) {
             tableModel.addColumn(s);
-            System.out.println(s);
         }
         tableModel.setRowCount(0);
 
@@ -154,10 +158,9 @@ public class Window extends JFrame {
             JFileChooser fileChooser = new JFileChooser();
             int response = fileChooser.showSaveDialog(this);
             if (response == JFileChooser.APPROVE_OPTION){
-                String fileName = fileChooser.getSelectedFile().toString();
-                if (!fileName.substring(fileName.length() - 4).equals(".txt")){
-                    fileName = fileName + ".txt";
-                }
+                this.diskFile = new DiskFile(fileChooser.getSelectedFile());
+                this.diskFile.setFile(fileChooser.getSelectedFile());
+                this.diskFile.writeIntoDiskFile(this.addressBook);
             }else{
                 System.out.println("file open operation was cancelled!");
             }

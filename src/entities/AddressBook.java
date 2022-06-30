@@ -37,7 +37,7 @@ public class AddressBook {
     }
 
     public void fillDataTable(){
-
+        this.dataTable = this.diskFile.getDataFromDiskFile();
     }
 
     public void addPersonRecord(PersonRecord personRecord){
