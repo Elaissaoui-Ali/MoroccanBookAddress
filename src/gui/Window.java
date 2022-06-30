@@ -108,11 +108,16 @@ public class Window extends JFrame {
         editMenu.add(new MenuOption("Edit selected...", "Edit selected record") {
             @Override
             public void action() {
-                openFromDiskFile();
+                editSelected();
             }
         });
 
         menuBar.add(editMenu);
+    }
+
+    private void editSelected() {
+        PersonRecord recordToEdit = this.addressBook.getDataTable().get(this.jTable.getSelectedRow());
+
     }
 
     private void createNewAddressBook(){
@@ -172,46 +177,13 @@ public class Window extends JFrame {
     }
 
     private void createNewRecord(){
-        JDialog dialog = new JDialog(this, "New Record");
-        JPanel panel = new JPanel();
-
-        JTextField firstName = new JTextField("First Name", 20);
-        JTextField lastName = new JTextField("Last Name", 20);
-        JTextField address = new JTextField("Address", 20);
-        JTextField city = new JTextField("City", 20);
-        JTextField postalCode = new JTextField("Postal Code", 20);
-        JTextField phoneNumber = new JTextField("Phone Number", 20);
-        JButton addBtn = new JButton("Add");
-        addBtn.addActionListener(new ActionListener() {
+        new AddEditDialog(this, new AddEditDialog.DialogAction() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                PersonRecord newRecord = new PersonRecord(
-                        firstName.getText(),
-                        lastName.getText(),
-                        address.getText(),
-                        city.getText(),
-                        postalCode.getText(),
-                        phoneNumber.getText()
-                );
+            public void action(PersonRecord newRecord) {
                 Window.this.addressBook.addPersonRecord(newRecord);
                 Window.this.tableModel.addRow(newRecord.toRow());
-                dialog.dispose();
             }
         });
-
-        panel.setLayout(new GridLayout(7, 1, 10, 10));
-        panel.add(firstName);
-        panel.add(lastName);
-        panel.add(address);
-        panel.add(city);
-        panel.add(postalCode);
-        panel.add(phoneNumber);
-        panel.add(addBtn);
-
-        dialog.add(panel);
-        dialog.pack();
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
     }
 
 }
