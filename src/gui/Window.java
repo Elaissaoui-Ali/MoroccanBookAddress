@@ -7,14 +7,17 @@ import entities.PersonRecord;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.util.ArrayList;
 
-    public class Window extends JFrame {
+public class Window extends JFrame {
 
     private static int openedWindows = 0;
     private final int WIDTH = 900;
@@ -177,10 +180,41 @@ import java.io.File;
                 deleteSelected();
             }
         });
+        editMenu.add(new MenuOption("Sort by last name", "Sort by last name") {
+            @Override
+            public void action() {
+                sortByLastName();
+            }
+        });
+        editMenu.add(new MenuOption("Sort by postal code", "Sort by postal code") {
+            @Override
+            public void action() {
+                sortByPostalCode();
+            }
+        });
         menuBar.add(editMenu);
     }
 
-    private void deleteSelected() {
+    private void sortByPostalCode() {
+        sortByColumn(4);
+        this.addressBook.sort(4);
+    }
+
+    private void sortByLastName() {
+        sortByColumn(1);
+        this.addressBook.sort(1);
+        }
+
+        private void sortByColumn(int index){
+            TableRowSorter<TableModel> sorter = new TableRowSorter<>(this.jTable.getModel());
+            this.jTable.setRowSorter(sorter);
+            ArrayList<RowSorter.SortKey> sortKeys = new ArrayList<>();
+            sortKeys.add(new RowSorter.SortKey(index, SortOrder.ASCENDING));
+            sorter.setSortKeys(sortKeys);
+            sorter.sort();
+        }
+
+        private void deleteSelected() {
         int selectedRow = Window.this.jTable.getSelectedRow();
         if(selectedRow < 0){
             JOptionPane.showConfirmDialog(this,
@@ -198,6 +232,10 @@ import java.io.File;
     }
 
     private void editSelected() {
+        System.out.println(this.jTable.getSelectedRow());
+        for(PersonRecord r: this.addressBook.getDataTable()){
+            System.out.println("from windows: " + r.toString());
+        }
         PersonRecord recordToEdit = this.addressBook.getDataTable().get(this.jTable.getSelectedRow());
         new AddEditDialog(this, recordToEdit, new AddEditDialog.DialogAction() {
             @Override
@@ -266,7 +304,7 @@ import java.io.File;
     }
 
     private void quitApp(){
-        System.out.println("quitOption");
+        Window.this.dispose();
     }
 
     private void createNewRecord(){
