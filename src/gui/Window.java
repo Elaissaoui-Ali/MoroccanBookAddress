@@ -243,12 +243,12 @@ public class Window extends JFrame {
                 int selectedRow = Window.this.jTable.getSelectedRow();
                 System.out.println(newRecord);
                 Window.this.addressBook.getDataTable().set(Window.this.jTable.getSelectedRow(), newRecord);
-                Window.this.tableModel.setValueAt(newRecord.getFirstName(), selectedRow, 0);
-                Window.this.tableModel.setValueAt(newRecord.getLastName(), selectedRow, 1);
-                Window.this.tableModel.setValueAt(newRecord.getAddress(), selectedRow, 2);
-                Window.this.tableModel.setValueAt(newRecord.getCity(), selectedRow, 3);
-                Window.this.tableModel.setValueAt(newRecord.getPostalCode(), selectedRow, 4);
-                Window.this.tableModel.setValueAt(newRecord.getPhoneNumber(), selectedRow, 5);
+                Window.this.jTable.setValueAt(newRecord.getFirstName(), selectedRow, 0);
+                Window.this.jTable.setValueAt(newRecord.getLastName(), selectedRow, 1);
+                Window.this.jTable.setValueAt(newRecord.getAddress(), selectedRow, 2);
+                Window.this.jTable.setValueAt(newRecord.getCity(), selectedRow, 3);
+                Window.this.jTable.setValueAt(newRecord.getPostalCode(), selectedRow, 4);
+                Window.this.jTable.setValueAt(newRecord.getPhoneNumber(), selectedRow, 5);
                 Window.this.dataChanged = true;
             }
         });
